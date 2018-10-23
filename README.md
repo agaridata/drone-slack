@@ -23,7 +23,7 @@ Build the Docker image with the following commands:
 
 ```
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo -o release/linux/amd64/drone-slack
-docker build --rm -t plugins/slack .
+docker build --rm -t quay.io/agari/drone-slack:latest .
 ```
 
 ## Usage
@@ -44,5 +44,28 @@ docker run --rm \
   -e DRONE_BUILD_STATUS=success \
   -e DRONE_BUILD_LINK=http://github.com/octocat/hello-world \
   -e DRONE_TAG=1.0.0 \
-  plugins/slack
+  quay.io/agari/drone-slack:latest
 ```
+
+## S3 Name Translation
+
+```
+PLUGIN_S3_BUCKET
+PLUGIN_S3_USERS_KEY
+```
+
+These environment variables/options can be set to an S3 bucket and file key respectively. This will
+cause the plugin use the json map in that file to translate `build.author` and `recipient` fields
+into `computed.authorSlack` and `computed.recipientSlack` leaving the original fields as-is.
+
+These new fields can be used in templates normally. The recipient option (to send a slack message
+to a specific user vs a channel) with automatically translate the name when the new S3 options are
+set.
+
+The format of the JSON file:
+{
+   "gitUserName": "slackUserName",
+}
+
+**Note** When testing this locally make sure to set the aws authentication environment variables on
+the docker container.
